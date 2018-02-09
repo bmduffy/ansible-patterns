@@ -1,0 +1,18 @@
+---
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: "Create a temporary directory"
+      tempfile:
+        state: directory
+        suffix: "_bar"
+        prefix: "foo_"
+        path: "/tmp"
+      register: tmpdir
+    - debug:
+        msg: "{{ tmpdir }}"
+    - name: "Remove '{{ tmpdir }}'"
+      file:
+        path: "{{ tmpdir }}"
+        state: absent

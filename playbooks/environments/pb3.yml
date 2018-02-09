@@ -1,0 +1,8 @@
+---
+
+- name: "Test"
+  hosts: towers
+  tasks:
+    - name: "Specific test for int"
+      debug:
+        msg: "I should only run on int"

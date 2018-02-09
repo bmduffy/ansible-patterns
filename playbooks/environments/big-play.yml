@@ -1,0 +1,25 @@
+---
+
+- name: "Check if I can get the name of the inventory"
+  hosts: all
+  tasks:
+    - name: "List my groups"
+      hosts: all
+      tasks:
+        - name: "My groups are ..."
+          debug:
+            msg: "{{ group_names }}"
+        - name: "I am specific prod"
+          debug:
+            msg: "will this break?"
+          when: "'prod' in group_names"
+    - import_playbook: pb1.yml
+    - import_playbook: pb2.yml
+    - import_playbook: pb3.yml
+      when: 'int' in group_names
+
+- name: "I am on UAT"
+  hosts: uat
+  tasks:
+    - debug:
+        msg: " I {{ inventory_hostname }} am a UAT box"

@@ -1,0 +1,11 @@
+---
+
+- name: "Test"
+  hosts: towers
+  tasks:
+    - name: "list home directory"
+      shell: "ls"
+      register: output
+    - name: "Print output"
+      debug:
+        msg: "{{ output }}"

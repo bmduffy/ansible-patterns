@@ -1,0 +1,56 @@
+---
+
+- hosts: node2
+  tasks:
+    - name: "Create a file"
+      copy:
+        content: "Bigger and Fudgier!!"
+        dest: "/etc/fudge2"
+
+- hosts: nodes
+  vars:
+    remote_copy_path: "/etc/fudge2"
+  pre_tasks:
+    - name: "Check if host has file"
+      stat:
+        path: "{{ remote_copy_path }}"
+      register: file_to_copy
+    - name: "Set has file fact"
+      set_fact:
+        has_file: "{{ file_to_copy.stat.exists }}"
+  tasks:
+    - name: "Add hosts to has_file_group"
+      add_host:  # add_host only runs on first host duhdoi!?
+        name: "{{ item }}"
+        groups: has_file_group
+      when: hostvars[item].has_file
+      with_items: "{{ groups.nodes }}"
+    - name: "Add host to missing_file_group"
+      add_host:
+        name: "{{ item }}"
+        groups: "missing_file_group"
+      when: not hostvars[item].has_file
+      with_items: "{{ groups.nodes }}"
+
+- hosts: has_file_group
+  vars:
+    remote_copy_path: "/etc/fudge2"
+  tasks:
+    - name: "Slurping on '{{ inventory_hostname }}', it has the file"
+      slurp:
+        path: "{{ remote_copy_path }}"
+      register: slurped
+    - name: "Copy temp file over"
+      copy:
+        content: "{{ slurped.content|b64decode }}"
+        dest: "{{ remote_copy_path }}"
+      delegate_to: "{{ item }}"
+      when: groups.missing_file_group is defined
+      with_items: "{{ groups.missing_file_group }}"
+
+- hosts: node1,node3
+  tasks:
+    - name: "Remove file"
+      file:
+        path: "/etc/fudge2"
+        state: absent

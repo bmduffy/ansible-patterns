@@ -1,0 +1,59 @@
+---
+
+- name: "Check if I can get the name of the inventory"
+  hosts: localhost
+  connection: local
+  vars:
+      object_ids: "43 64 63"
+      env: "xxx"
+      things:
+          - thing1
+          - thing2
+          - thing3
+      mydict:
+          thing1: 1
+          thing2: 2
+      projects:
+          - name: "xx"
+            type: "manual"
+            inventories:
+              - "lala"
+          - name: "yy"
+            type: "git"
+            inventories:
+              - "blah"
+              - "ghah"
+          - name: "zz"
+            type: "git"
+            inventories:
+              - "haha"
+  tasks:
+      - name: "Conditional dictionary lookup"
+        debug:
+          msg: "{{ item }} : {{ mydict[item] }}"
+        when: item in mydict
+        with_items: "{{ things }}"
+
+      - name: "Check element in list"
+        debug:
+          msg: "element in list"
+        when: env not in ["xxx", "yyy"]
+
+      - name: "Split a string with jinja2"
+        set_fact:
+          object_id_list: "{{ object_ids.split() }}"
+      - debug:
+          msg: "{{ object_id_list }}"
+
+      - name: "Filter a list on a specific attribute value"
+        set_fact:
+          git_projects: "{{ projects | selectattr('type', 'equalto', 'git') }}"
+      - debug:
+          msg: "{{ git_projects }}"
+
+     - name: "Compile a list of lists"
+       set_fact:
+         inventories: "{{ (inventories | default([])) + item.inventories }}"
+       with_items: "{{ projects }}"
+     - debug:
+         msg: "{{ inventories }}"

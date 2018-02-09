@@ -1,0 +1,8 @@
+[node2]
+node2.test.cluster.local
+
+[nodes]
+node2
+
+[uat:children]
+nodes

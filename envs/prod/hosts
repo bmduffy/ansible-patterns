@@ -1,0 +1,8 @@
+[node3]
+node3.test.cluster.local
+
+[nodes]
+node3
+
+[prod:children]
+nodes

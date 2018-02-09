@@ -1,0 +1,9 @@
+---
+
+- name: "Deploy"
+  hosts: towers
+  tasks:
+    - name: "install git on box"
+      package:
+        name: "git"
+        state: present

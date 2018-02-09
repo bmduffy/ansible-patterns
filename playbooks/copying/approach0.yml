@@ -1,0 +1,65 @@
+---
+
+- hosts: node2
+  tasks:
+    - name: "Create a file"
+      copy:
+        content: "Bigger and Fudgier!!"
+        dest: "/etc/fudge2"
+
+- hosts: nodes
+  vars:
+    remote_copy: "/etc/fudge2"
+    local_copy: "/tmp/fudge2"
+  tasks:
+    - name: "Ensure rsync is installed"
+      yum:
+        name: "rsync"
+        state: present
+    - name: "Ensure rsyncd is enabled and stared on '{{ inventory_hostname }}'"
+      systemd:
+        name: "rsyncd"
+        enabled: true
+        state: started
+    - name: "Check for '{{ remote_copy }}' on '{{ inventory_hostname }}'"
+      stat:
+        path: "{{ remote_copy }}"
+      register: ca_file
+    - name: "Set has_file flag"
+      set_fact:
+        has_file: "{{ ca_file.stat.exists }}"
+    - name: "Initialize host list"
+      set_fact:
+        missing: []
+    - name: "Figure out which hosts are missing '{{ remote_copy }}'"
+      set_fact:
+        missing: "{{ missing|default([]) }} + ['{{ item }}']"
+      when: not hostvars[item].has_file
+      with_items: "{{ groups['nodes'] }}"
+    - name: "Slurping on '{{ inventory_hostname }}', it has the file"
+      slurp:
+        path: "{{ remote_copy }}"
+      register: slurped
+      when: missing and has_file
+    - name: "Tasks to complete on localhost"
+      block:
+        - name: "Copy file content to localhost"
+          copy:
+            content: "{{ slurped.content | b64decode }}"
+            dest: "{{ local_copy }}"
+        - name: "Rsync the localhost copy to nodes missing the file"
+          shell: "rsync -avzhe ssh {{ local_copy }} root@{{ item }}:/etc/"
+          with_items: "{{ missing }}"
+        - name: "Remove local copy of '{{ remote_copy }}'"
+          file:
+            path: "{{ local_copy }}"
+            state: absent
+      delegate_to: localhost
+      when: missing and has_file
+
+- hosts: node1,node3
+  tasks:
+    - name: "Remove file"
+      file:
+        path: "/etc/fudge2"
+        state: absent
