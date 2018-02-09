@@ -1,0 +1,35 @@
+---
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: "Fail when no users_path variable is specified"
+      fail:
+        msg: "Path to managed users file `-e 'users_path=< absolute path >'`"
+      when: users_path is not defined
+    - name: "Fail when '{{ users_path }}' is not an absolute path"
+      fail:
+        msg: "'{{ users_path }}' is not an absolute path"
+      when: not(users_path | is_abs)
+    - name: "Fail when '{{ users_path }}' does not exist"
+      fail:
+        msg: "'{{ users_path }}' does not exist"
+      when: not(users_path | is_file)
+
+- hosts: nodes
+  tasks:
+    - name: "Include '{{ users_path }}'"
+      include_vars:
+        file: "{{ users_path }}"
+        name: "users"
+      delegate_to: localhost
+    - name: "Print users to add"
+      debug:
+        msg: "add >> user: {{ item.username }} email: {{ item.email }}"
+      with_items: "{{ users.add }}"
+      when: users.add is defined
+    - name: "Print users to remove"
+      debug:
+        msg: "remove << user: {{ item }}"
+      with_items: "{{ users.remove }}"
+      when: users.remove is defined

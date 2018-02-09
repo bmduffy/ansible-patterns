@@ -1,0 +1,13 @@
+---
+
+add:
+  - username: "wako"
+    email: "wako@animaniacs.com"
+  - username: "yako"
+    email: "yako@animaniacs.com"
+  - username: "dot"
+    email: "dot@animaniacs.com"
+
+remove:
+  - "Rick"
+  - "Morty"
