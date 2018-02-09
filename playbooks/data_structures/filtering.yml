@@ -45,7 +45,7 @@
       - debug:
           msg: "{{ object_id_list }}"
 
-      - name: "Filter a list on a specific attribute value"
+      - name: "Filter on a specific value using jinja2 filters"
         set_fact:
           git_projects: "{{ projects | selectattr('type', 'equalto', 'git') }}"
       - debug:
