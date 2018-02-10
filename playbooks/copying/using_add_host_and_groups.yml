@@ -11,13 +11,14 @@
   vars:
     remote_copy_path: "/etc/fudge2"
   pre_tasks:
-    - name: "Check if host has file"
+    - name: "Check if the host has the file"
       stat:
-        path: "{{ remote_copy_path }}"
-      register: file_to_copy
-    - name: "Set has file fact"
-      set_fact:
-        has_file: "{{ file_to_copy.stat.exists }}"
+          path: "{{ remote_copy_path }}"
+      register: remote_copy
+    - set_fact:
+        has_file: "{{ remote_copy.stat.exists }}"
+    - debug:
+        msg: "{{ has_file }}"
   tasks:
     - name: "Add hosts to has_file_group"
       add_host:  # add_host only runs on first host duhdoi!?
