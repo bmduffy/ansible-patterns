@@ -17,8 +17,6 @@
       register: remote_copy
     - set_fact:
         has_file: "{{ remote_copy.stat.exists }}"
-    - debug:
-        msg: "{{ has_file }}"
   tasks:
     - name: "Add hosts to has_file_group"
       add_host:  # add_host only runs on first host duhdoi!?

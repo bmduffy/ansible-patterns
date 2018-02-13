@@ -1,0 +1,12 @@
+{
+    "node":
+    {
+        "labels": {
+            "country": "us",
+            "region": "infra",
+            "builder": "yes",
+            "zone": "default",
+            "purpose": "infra"
+        }
+    }
+}
