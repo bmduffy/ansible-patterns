@@ -52,6 +52,11 @@
       copy:
         content: "{{ node_config | to_nice_yaml(indent=2) }}"
         dest: "{{ dst_file }}"
+    - name: "Verify new labels fact value is set"
+      shell: "cat {{ dst_file }}"
+      register: output
+    - debug:
+        msg: "{{ output }}"
     - name: "Remove 'fact cache' file "
       file:
         path: "{{ dst_file }}"

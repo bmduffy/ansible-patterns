@@ -4,7 +4,9 @@
   vars:
     src_file: "./files/test.json"
     dst_file: "/root/test.json"
-    make_it_fudge: "wholelottafudge"
+    new_labels:
+      region: "wholelottafudge"
+      other: "if you like"
   tasks:
     - name: "Copy some 'local facts' to the server"
       copy:
@@ -21,8 +23,7 @@
       set_fact:
         local_fact_cache: >
           {{ local_fact_cache |
-             combine({'node': {'labels': {'region': make_it_fudge }}},
-             recursive=True)}}
+             combine({'node': {'labels': new_labels }}, recursive=True)}}
     - name: "Check that the fact update succeeded"
       debug:
         msg: "{{ local_fact_cache.node.labels.region }}"
@@ -30,14 +31,11 @@
       copy:
         content: "{{ local_fact_cache }}"
         dest: "{{ dst_file }}"
-    - name: "Verify that '{{ make_it_fudge }}' fact value is set"
-      shell: >
-        grep {{ make_it_fudge }} {{ dst_file }}
+    - name: "Verify new labels fact value is set"
+      shell: "cat {{ dst_file }}"
       register: output
-    - name: "FAIL When the fudge is missing"
-      fail:
-        msg: "'{{ make_it_fudge }}' did not appear in the '{{ dst_file }}'"
-      when: output.rc != 0
+    - debug:
+        msg: "{{ output }}"
     - name: "Remove 'fact cache' file "
       file:
         path: "{{ dst_file }}"
