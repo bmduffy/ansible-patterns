@@ -20,9 +20,9 @@
     - name: "Update local fact cache on server"
       set_fact:
         local_fact_cache: >
-            {{ local_fact_cache | combine({
-            'node': {'labels': {'region': make_it_fudge }}
-            })}}
+            {{ local_fact_cache |
+              combine({'node': {'labels': {'region': make_it_fudge }}}, recursive=True)
+            }}
     - name: "Check that the fact update succeeded"
       debug:
         msg: "{{ local_fact_cache.node.labels.region }}"
