@@ -1,0 +1,14 @@
+apiVersion: v1
+dockerConfig:
+  execHandlerName: ""
+kind: NodeConfig
+kubeletArguments:
+  image-gc-high-threshold:
+  - '65'
+  image-gc-low-threshold:
+  - '60'
+  node-labels:
+  - country=uk
+  - region=rsvd
+  - purpose=rsvd
+  - zone=eng1
