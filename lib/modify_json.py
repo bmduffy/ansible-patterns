@@ -26,7 +26,8 @@ EXAMPLES = """
 
 
 def set_key(json_data, json_key, json_value):
-    ''' Updates a parsed json structure setting a key to a value.
+    """
+        Updates a parsed json structure setting a key to a value.
 
         :param json_data: json structure to modify.
         :type json_data: dict
@@ -36,18 +37,21 @@ def set_key(json_data, json_key, json_value):
         :type json_value: mixed
         :returns: Changes to the json_data structure
         :rtype: dict(tuple())
-    '''
+    """
+
     changes = []
     ptr = json_data
     final_key = json_key.split('.')[-1]
+
     for key in json_key.split('.'):
-        # Key isn't present and we're not on the final key. Set to empty dictionary.
+        # Key isn't present and we're not on the final key. Set to empty dict.
         if key not in ptr and key != final_key:
             ptr[key] = {}
             ptr = ptr[key]
         # Current key is the final key. Update value.
         elif key == final_key:
-            if (key in ptr and module.safe_eval(ptr[key]) != json_value) or (key not in ptr):  # noqa: F405
+            if ((key in ptr and module.safe_eval(ptr[key]) != json_value)
+                or (key not in ptr)):
                 ptr[key] = json_value
                 changes.append((json_key, json_value))
         else:
@@ -60,17 +64,14 @@ def set_key(json_data, json_key, json_value):
 
 
 def main():
-    ''' Modify key (supplied in jinja2 dot notation) in json file, setting
+    """
+        Modify key (supplied in jinja2 dot notation) in json file, setting
         the key to the desired value.
-    '''
+    """
 
-    # disabling pylint errors for global-variable-undefined and invalid-name
-    # for 'global module' usage, since it is required to use ansible_facts
-    # pylint: disable=global-variable-undefined, invalid-name,
-    # redefined-outer-name
     global module
 
-    module = AnsibleModule(  # noqa: F405
+    module = AnsibleModule(
         argument_spec=dict(
             dest=dict(required=True),
             json_key=dict(required=True),
@@ -84,13 +85,6 @@ def main():
     json_key = module.params['json_key']
     json_value = module.safe_eval(module.params['json_value'])
     backup = module.params['backup']
-
-    # # Represent null values as an empty string.
-    # # pylint: disable=missing-docstring, unused-argument
-    # def none_representer(dumper, data):
-    #     return json.ScalarNode(tag=u'tag:json.org,2002:null', value=u'')
-    #
-    # json.add_representer(type(None), none_representer)
 
     try:
         with open(dest) as json_file:
@@ -106,8 +100,6 @@ def main():
 
         return module.exit_json(changed=(len(changes) > 0), changes=changes)
 
-    # ignore broad-except error to avoid stack trace to ansible user
-    # pylint: disable=broad-except
     except Exception as error:
         return module.fail_json(msg=str(error))
 
