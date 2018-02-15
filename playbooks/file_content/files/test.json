@@ -8,5 +8,9 @@
             "zone": "default",
             "purpose": "infra"
         }
+    },
+    "other" : {
+        "some": "fact",
+        "yipee": "doodle"
     }
 }

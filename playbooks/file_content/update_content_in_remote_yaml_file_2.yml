@@ -2,44 +2,28 @@
 
 - hosts: nodes
   vars:
-    src_file: "./files/test.yaml"
-    dst_file: "/root/test.yaml"
-    new_node_labels:
-        region: "infra"
+    src_yaml_file: "./files/test.yaml"
+    dst_yaml_file: "/root/test.yaml"
+    src_json_file: "./files/test.json"
+    dst_json_file: "/root/test.json"
   tasks:
     - name: "Copy some 'local facts' to the server"
       copy:
-        src: "{{ src_file }}"
-        dest: "{{ dst_file }}"
-    - name: "Slurp the local fact cache"
-      slurp:
-        path: "{{ dst_file }}"
-      register: slurped
-    - set_fact:
-        node_config: "{{ slurped.content | b64decode | from_yaml }}"
-    - set_fact:
-        new_label_list: >
-          {{ node_config.kubeletArguments['node-labels']
-             | list_to_dict
-             | combine(new_node_labels, recursive=True)
-             | dict_to_kv_list }}
-    - set_fact:
-        node_config: |
-          {{ node_config | combine(
-             {'kubeletArguments': {'node-labels': new_label_list}},
-               recursive=True)}}
-    - debug:
-        msg: "{{ node_config }}"
-    - name: "Dump the new facts into the local fact cache file"
+        src: "{{ src_json_file }}"
+        dest: "{{ dst_json_file }}"
+    - name: "Copy some 'config' to the server"
       copy:
-        content: "{{ node_config | to_nice_yaml(indent=2) }}"
-        dest: "{{ dst_file }}"
-    - name: "Verify new labels fact value is set"
-      shell: "cat {{ dst_file }}"
-      register: output
-    - debug:
-        msg: "{{ output }}"
-    - name: "Remove 'fact cache' file "
-      file:
-        path: "{{ dst_file }}"
-        state: absent
+        src: "{{ src_yaml_file }}"
+        dest: "{{ dst_yaml_file }}"
+    - set_fact:
+        new_label_dict: "{{ hostvars[inventory_hostname].node_labels }}"
+    - set_fact:
+        new_label_list: "{{ new_label_dict | dict_to_kv_list }}"
+    - modify_yaml:
+        yaml_key: "kubeletArguments.node-labels"
+        yaml_value: "{{ new_label_list }}"
+        dest: "{{ dst_yaml_file }}"
+    - modify_json:
+        json_key: "node.labels"
+        json_value: "{{ new_label_dict }}"
+        dest: "{{ dst_json_file }}"

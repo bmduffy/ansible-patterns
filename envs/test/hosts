@@ -1,11 +1,11 @@
 [node1]
-node1.test.cluster.local
+node1.test.cluster.local node_labels='{"region": "infra", "zone": "dcn", "purpose": "rsvd"}'
 
 [node2]
-node2.test.cluster.local
+node2.test.cluster.local node_labels='{"region": "grid", "zone": "dcn", "purpose": "grid"}'
 
 [node3]
-node3.test.cluster.local
+node3.test.cluster.local node_labels='{"region": "work", "zone": "dcn", "purpose": "work"}'
 
 [nodes:children]
 node1
