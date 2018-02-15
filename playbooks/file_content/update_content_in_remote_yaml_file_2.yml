@@ -15,36 +15,19 @@
       slurp:
         path: "{{ dst_file }}"
       register: slurped
-    - name: "Get node config"
-      set_fact:
+    - set_fact:
         node_config: "{{ slurped.content | b64decode | from_yaml }}"
     - set_fact:
-        old_node_label_list: |
-            {{ node_config.kubeletArguments['node-labels'] }}
-    - set_fact:
-        old_node_labels_dict: |
-          {%- set d = {} -%}
-          {%- for x in old_node_label_list -%}
-            {%- set k, v = x.split('=') -%}
-            {%- set ignore = d.update({ k: v }) -%}
-          {%- endfor -%}
-          {{ d }}
-    - set_fact:
-        new_node_labels_dict: |
-          {{ old_node_labels_dict | combine(new_node_labels, recursive=True) }}
-    - set_fact:
-        new_node_labels_list: |
-          {%- set l = [] -%}
-          {%- for k, v in new_node_labels_dict.iteritems() -%}
-            {%- set ignore = l.append(k + '=' + v) -%}
-          {%- endfor -%}
-          {{ l }}
+        new_label_list: >
+          {{ node_config.kubeletArguments['node-labels']
+             | list_to_dict
+             | combine(new_node_labels, recursive=True)
+             | dict_to_kv_list }}
     - set_fact:
         node_config: |
           {{ node_config | combine(
-             {'kubeletArguments': {'node-labels': new_node_labels_list}},
-               recursive=True
-          )}}
+             {'kubeletArguments': {'node-labels': new_label_list}},
+               recursive=True)}}
     - debug:
         msg: "{{ node_config }}"
     - name: "Dump the new facts into the local fact cache file"
